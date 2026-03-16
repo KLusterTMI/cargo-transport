@@ -1,12 +1,17 @@
-from flask import Flask, render_template, request, redirect, url_for, session, g
 import sqlite3
 import os
+import sys
+from flask import Flask, render_template, request, redirect, url_for, session, g
 from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'simple_secret_key_for_demo'
 
 DATABASE = 'cargo.db'
+
+print("=== STARTING APP ===")
+print("Current directory:", os.getcwd())
+print("Files in directory:", os.listdir('.'))
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -22,9 +27,11 @@ def close_connection(exception):
         db.close()
 
 def init_db():
+    print(">>> init_db() called")
     with app.app_context():
         db = get_db()
         cursor = db.cursor()
+        print(">>> Creating tables...")
         # таблица пользователей
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
@@ -71,6 +78,13 @@ def init_db():
             )
         ''')
         db.commit()
+        print(">>> Tables created (if not existed)")
+
+init_db()
+
+# ------------------------------------------------------------
+# Маршруты
+# ------------------------------------------------------------
 
 @app.route('/')
 def index():
@@ -120,7 +134,7 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
-# Заказчик
+# ----- Заказчик -----
 @app.route('/customer')
 def customer_dashboard():
     if session.get('role') != 'customer':
@@ -137,7 +151,6 @@ def create_order():
         dt = request.form['datetime']
         cargo_desc = request.form['cargo_description']
         body_type = request.form['body_type']
-        # сохраняем заказ без ТС и водителя
         db = get_db()
         cursor = db.cursor()
         cursor.execute('''
@@ -157,7 +170,6 @@ def choose_vehicle(order_id):
     order = db.execute('SELECT * FROM orders WHERE id=?', (order_id,)).fetchone()
     if not order or order['customer_id'] != session['user_id']:
         return 'Заказ не найден'
-    # ищем свободные ТС с подходящим типом кузова
     vehicles = db.execute('''
         SELECT * FROM vehicles 
         WHERE status='свободно' AND body_type=?
@@ -169,13 +181,10 @@ def assign_vehicle(order_id, vehicle_id):
     if session.get('role') != 'customer':
         return redirect(url_for('login'))
     db = get_db()
-    # проверяем, что ТС свободно и подходит
     vehicle = db.execute('SELECT * FROM vehicles WHERE id=? AND status="свободно"', (vehicle_id,)).fetchone()
     if not vehicle:
         return 'Транспортное средство недоступно'
-    # назначаем ТС на заказ
     db.execute('UPDATE orders SET vehicle_id=? WHERE id=?', (vehicle_id, order_id))
-    # меняем статус ТС на "в рейсе"
     db.execute('UPDATE vehicles SET status="в рейсе" WHERE id=?', (vehicle_id,))
     db.commit()
     return redirect(url_for('my_orders'))
@@ -195,7 +204,7 @@ def my_orders():
     ''', (session['user_id'],)).fetchall()
     return render_template('my_orders.html', orders=orders)
 
-# Водитель
+# ----- Водитель -----
 @app.route('/driver')
 def driver_dashboard():
     if session.get('role') != 'driver':
@@ -207,7 +216,6 @@ def available_orders():
     if session.get('role') != 'driver':
         return redirect(url_for('login'))
     db = get_db()
-    # заказы со статусом "создан" (ещё не приняты)
     orders = db.execute('''
         SELECT o.*, v.plate, v.brand, v.model
         FROM orders o
@@ -221,7 +229,6 @@ def accept_order(order_id):
     if session.get('role') != 'driver':
         return redirect(url_for('login'))
     db = get_db()
-    # проверяем, что заказ ещё не принят
     order = db.execute('SELECT * FROM orders WHERE id=? AND status="создан"', (order_id,)).fetchone()
     if not order:
         return 'Заказ недоступен'
@@ -234,18 +241,16 @@ def complete_order(order_id):
     if session.get('role') != 'driver':
         return redirect(url_for('login'))
     db = get_db()
-    # проверяем, что заказ принят этим водителем
     order = db.execute('SELECT * FROM orders WHERE id=? AND driver_id=? AND status="принят"', (order_id, session['user_id'])).fetchone()
     if not order:
         return 'Заказ недоступен'
     db.execute('UPDATE orders SET status="выполнен" WHERE id=?', (order_id,))
-    # освобождаем ТС
     if order['vehicle_id']:
         db.execute('UPDATE vehicles SET status="свободно" WHERE id=?', (order['vehicle_id'],))
     db.commit()
     return redirect(url_for('driver_dashboard'))
 
-# Диспетчер
+# ----- Диспетчер -----
 @app.route('/dispatcher')
 def dispatcher_dashboard():
     if session.get('role') != 'dispatcher':
@@ -311,18 +316,11 @@ def assign_driver(vehicle_id):
         return 'ТС не найдено'
     if request.method == 'POST':
         driver_id = request.form['driver_id']
-        # назначаем водителя на ТС
         db.execute('UPDATE vehicles SET current_driver_id=? WHERE id=?', (driver_id, vehicle_id))
         db.commit()
         return redirect(url_for('vehicles'))
-    # список свободных водителей
     drivers = db.execute('SELECT id, full_name FROM users WHERE role="driver"').fetchall()
     return render_template('assign_driver.html', vehicle=vehicle, drivers=drivers)
-
-def init_db():
-    ...
-    
-init_db() 
 
 if __name__ == '__main__':
     app.run(debug=True)
