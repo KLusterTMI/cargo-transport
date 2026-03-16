@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Грузовые автоперевозки</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <a href="/">Главная</a>
+        {% if session.user_id %}
+            <a href="/logout">Выход</a>
+        {% else %}
+            <a href="/login">Вход</a>
+            <a href="/register">Регистрация</a>
+        {% endif %}
+    </nav>
+    <hr>
+    {% block content %}{% endblock %}
+</body>
+</html>

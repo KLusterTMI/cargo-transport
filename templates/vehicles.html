@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Автопарк</h2>
+<a href="/add_vehicle">Добавить ТС</a>
+<table border="1">
+    <tr><th>Госномер</th><th>Марка</th><th>Модель</th><th>Тип кузова</th><th>Грузоподъёмность</th><th>Статус</th><th>Водитель</th><th>Действия</th></tr>
+    {% for v in vehicles %}
+    <tr>
+        <td>{{ v.plate }}</td>
+        <td>{{ v.brand }}</td>
+        <td>{{ v.model }}</td>
+        <td>{{ v.body_type }}</td>
+        <td>{{ v.capacity }}</td>
+        <td>{{ v.status }}</td>
+        <td>{{ v.driver_name or 'не назначен' }}</td>
+        <td>
+            <a href="/assign_driver/{{ v.id }}">Назначить водителя</a> |
+            <a href="/delete_vehicle/{{ v.id }}" onclick="return confirm('Удалить?')">Удалить</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

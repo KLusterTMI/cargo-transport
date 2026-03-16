@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Новый заказ</h2>
+<form method="post">
+    Адрес отправления: <input type="text" name="pickup" required><br>
+    Адрес назначения: <input type="text" name="destination" required><br>
+    Дата и время (ГГГГ-ММ-ДД ЧЧ:ММ): <input type="text" name="datetime" required><br>
+    Описание груза: <input type="text" name="cargo_description"><br>
+    Требуемый тип кузова:
+    <select name="body_type">
+        <option>тент</option>
+        <option>рефрижератор</option>
+        <option>бортовой</option>
+        <option>самосвал</option>
+    </select><br>
+    <button type="submit">Далее</button>
+</form>
+{% endblock %}

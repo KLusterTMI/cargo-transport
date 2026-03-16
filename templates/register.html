@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Регистрация</h2>
+<form method="post">
+    ФИО: <input type="text" name="full_name" required><br>
+    Телефон: <input type="text" name="phone"><br>
+    Роль:
+    <select name="role">
+        <option value="customer">Заказчик</option>
+        <option value="driver">Водитель</option>
+        <option value="dispatcher">Диспетчер</option>
+    </select><br>
+    Логин: <input type="text" name="login" required><br>
+    Пароль: <input type="password" name="password" required><br>
+    <div id="driver_fields" style="display:none;">
+        Стаж (лет): <input type="number" name="experience"><br>
+        Категория прав: <input type="text" name="license_category"><br>
+    </div>
+    <button type="submit">Зарегистрироваться</button>
+</form>
+<script>
+    document.querySelector('select[name="role"]').addEventListener('change', function() {
+        document.getElementById('driver_fields').style.display = this.value === 'driver' ? 'block' : 'none';
+    });
+</script>
+{% endblock %}

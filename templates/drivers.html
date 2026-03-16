@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Реестр водителей</h2>
+<table border="1">
+    <tr><th>ФИО</th><th>Телефон</th><th>Стаж</th><th>Категория</th></tr>
+    {% for d in drivers %}
+    <tr>
+        <td>{{ d.full_name }}</td>
+        <td>{{ d.phone }}</td>
+        <td>{{ d.experience or '' }}</td>
+        <td>{{ d.license_category or '' }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

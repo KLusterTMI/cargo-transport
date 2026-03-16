@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Выберите транспортное средство</h2>
+<p>Заказ: {{ order.pickup }} → {{ order.destination }}</p>
+{% if vehicles %}
+    <table border="1">
+        <tr><th>Госномер</th><th>Марка</th><th>Модель</th><th>Тип кузова</th><th>Грузоподъёмность (кг)</th><th></th></tr>
+        {% for v in vehicles %}
+        <tr>
+            <td>{{ v.plate }}</td>
+            <td>{{ v.brand }}</td>
+            <td>{{ v.model }}</td>
+            <td>{{ v.body_type }}</td>
+            <td>{{ v.capacity }}</td>
+            <td><a href="/assign_vehicle/{{ order.id }}/{{ v.id }}">Выбрать</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>Нет подходящих свободных ТС.</p>
+{% endif %}
+{% endblock %}

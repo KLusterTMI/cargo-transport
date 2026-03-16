@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Доступные заказы</h2>
+<table border="1">
+    <tr><th>Откуда</th><th>Куда</th><th>Время</th><th>Груз</th><th>ТС</th><th></th></tr>
+    {% for o in orders %}
+    <tr>
+        <td>{{ o.pickup }}</td>
+        <td>{{ o.destination }}</td>
+        <td>{{ o.datetime }}</td>
+        <td>{{ o.cargo_description }}</td>
+        <td>{{ o.brand }} {{ o.model }} ({{ o.plate }})</td>
+        <td><a href="/accept_order/{{ o.id }}">Принять</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
