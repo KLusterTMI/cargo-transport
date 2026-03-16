@@ -315,10 +315,14 @@ def assign_driver(vehicle_id):
         db.execute('UPDATE vehicles SET current_driver_id=? WHERE id=?', (driver_id, vehicle_id))
         db.commit()
         return redirect(url_for('vehicles'))
-    # список свободных водителей (не занятых на других ТС? для простоты покажем всех водителей)
+    # список свободных водителей
     drivers = db.execute('SELECT id, full_name FROM users WHERE role="driver"').fetchall()
     return render_template('assign_driver.html', vehicle=vehicle, drivers=drivers)
 
+def init_db():
+    ...
+    
+init_db() 
+
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True)
